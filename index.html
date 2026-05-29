@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Buzzer</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0f0f10;
+    --surface: #1a1a1d;
+    --border: rgba(255,255,255,0.08);
+    --text: #f0f0f0;
+    --muted: #888;
+    --buzz-idle: #2a2a2e;
+    --buzz-idle-border: rgba(255,255,255,0.12);
+    --buzz-win: #16a34a;
+    --buzz-lose: #7f1d1d;
+    --buzz-ready: #1d4ed8;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: system-ui, sans-serif;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    padding: 24px;
+    user-select: none;
+  }
+
+  /* ── room setup screen ── */
+  #setup {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    width: 100%;
+    max-width: 340px;
+  }
+
+  #setup h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+  }
+
+  #setup p {
+    font-size: 14px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  .input-row {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+  }
+
+  #room-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 14px;
+    color: var(--text);
+    font-size: 15px;
+    font-family: inherit;
+    outline: none;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  #room-input::placeholder { letter-spacing: 0; text-transform: none; color: var(--muted); }
+  #room-input:focus { border-color: rgba(255,255,255,0.25); }
+
+  .btn {
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 10px;
+    padding: 11px 20px;
+    font-size: 14px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    transition: opacity 0.15s;
+    white-space: nowrap;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn.secondary {
+    background: var(--surface);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    color: var(--muted);
+    font-size: 12px;
+  }
+  .divider::before, .divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* ── game screen ── */
+  #game { display: none; flex-direction: column; align-items: center; gap: 24px; width: 100%; }
+
+  .room-badge {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .players-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .player-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: #16a34a;
+    display: inline-block;
+  }
+
+  /* ── status banner ── */
+  #status {
+    font-size: 18px;
+    font-weight: 600;
+    text-align: center;
+    min-height: 28px;
+    transition: color 0.2s;
+  }
+  #status.win  { color: #4ade80; }
+  #status.lose { color: #f87171; }
+
+  /* ── THE BUZZ BUTTON ── */
+  #buzz-btn {
+    width: min(320px, 80vw);
+    height: min(320px, 80vw);
+    border-radius: 50%;
+    border: 3px solid var(--buzz-idle-border);
+    background: var(--buzz-idle);
+    color: var(--text);
+    font-size: 32px;
+    font-weight: 800;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, transform 0.08s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 6px;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  #buzz-btn .sub {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  #buzz-btn.ready {
+    border-color: rgba(59,130,246,0.5);
+    background: rgba(29,78,216,0.15);
+    cursor: pointer;
+  }
+  #buzz-btn.ready:hover { background: rgba(29,78,216,0.25); border-color: rgba(59,130,246,0.8); }
+  #buzz-btn.ready:active { transform: scale(0.96); }
+
+  #buzz-btn.win {
+    border-color: #16a34a;
+    background: rgba(22,163,74,0.2);
+    cursor: default;
+  }
+
+  #buzz-btn.lose {
+    border-color: rgba(127,29,29,0.6);
+    background: rgba(127,29,29,0.15);
+    cursor: default;
+  }
+
+  #buzz-btn.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* ── reset button ── */
+  #reset-btn {
+    display: none;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--muted);
+    font-size: 13px;
+    font-family: inherit;
+    padding: 8px 20px;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+  }
+  #reset-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+
+  /* ── connection states ── */
+  #conn-status {
+    font-size: 12px;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+  .pulsing { animation: pulse 1.2s ease-in-out infinite; }
+
+  /* ── spacebar hint ── */
+  .hint {
+    font-size: 12px;
+    color: var(--muted);
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setup">
+  <h1>⚡ Buzzer</h1>
+  <p>Create a room and share the code with your friend. First to buzz wins the right to answer.</p>
+
+  <button class="btn" onclick="createRoom()">Create new room</button>
+
+  <div class="divider">or join existing</div>
+
+  <div class="input-row">
+    <input id="room-input" type="text" placeholder="Enter room code" maxlength="6" />
+    <button class="btn secondary" onclick="joinRoom()">Join</button>
+  </div>
+</div>
+
+<!-- GAME SCREEN -->
+<div id="game">
+  <div class="room-badge" id="room-label">ROOM: ----</div>
+
+  <div class="players-row">
+    <span class="player-dot"></span>
+    <span id="player-count">1 player connected</span>
+  </div>
+
+  <div id="status">Waiting for players...</div>
+
+  <button id="buzz-btn" class="locked" onclick="buzz()">
+    BUZZ
+    <span class="sub">tap to answer</span>
+  </button>
+
+  <button id="reset-btn" onclick="reset()">↺ Reset round</button>
+
+  <div class="hint">or press <kbd style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:11px">Space</kbd></div>
+
+  <div id="conn-status" class="pulsing">Connecting...</div>
+</div>
+
+<script>
+  let ws = null;
+  let myName = null;
+  let isLocked = false;
+  let currentRoom = null;
+
+  // ── Room code helpers ──
+  function randomCode() {
+    return Math.random().toString(36).substring(2, 7).toUpperCase();
+  }
+
+  function createRoom() {
+    const code = randomCode();
+    enterRoom(code);
+  }
+
+  function joinRoom() {
+    const code = document.getElementById('room-input').value.trim().toUpperCase();
+    if (!code) { alert('Enter a room code first.'); return; }
+    enterRoom(code);
+  }
+
+  // ── Enter a room ──
+  function enterRoom(code) {
+    currentRoom = code;
+
+    // Show game screen
+    document.getElementById('setup').style.display = 'none';
+    const game = document.getElementById('game');
+    game.style.display = 'flex';
+
+    document.getElementById('room-label').textContent = 'ROOM: ' + code;
+
+    // Build WebSocket URL — works on Glitch and locally
+    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+    const host = location.host;
+    const url = proto + '://' + host + '/' + code;
+
+    connect(url);
+  }
+
+  // ── WebSocket connection ──
+  function connect(url) {
+    ws = new WebSocket(url);
+
+    ws.onopen = () => {
+      setConnStatus('Connected ✓', false);
+    };
+
+    ws.onmessage = (e) => {
+      const msg = JSON.parse(e.data);
+
+      if (msg.type === 'welcome') {
+        myName = msg.name;
+      }
+
+      if (msg.type === 'state') {
+        updatePlayerCount(msg.playerCount);
+        if (!msg.locked) {
+          resetUI();
+        }
+      }
+
+      if (msg.type === 'buzzed') {
+        isLocked = true;
+        if (msg.isYou) {
+          setStatus('🎉 You buzzed first! Answer now.', 'win');
+          setBuzzState('win');
+        } else {
+          setStatus(msg.by + ' buzzed first!', 'lose');
+          setBuzzState('lose');
+        }
+        document.getElementById('reset-btn').style.display = 'inline-block';
+      }
+
+      if (msg.type === 'reset') {
+        resetUI();
+      }
+    };
+
+    ws.onclose = () => {
+      setConnStatus('Disconnected. Reconnecting...', true);
+      setTimeout(() => connect(
+        (location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.host + '/' + currentRoom
+      ), 2000);
+    };
+
+    ws.onerror = () => ws.close();
+  }
+
+  // ── Actions ──
+  function buzz() {
+    if (isLocked || !ws || ws.readyState !== 1) return;
+    ws.send(JSON.stringify({ type: 'buzz' }));
+  }
+
+  function reset() {
+    if (!ws || ws.readyState !== 1) return;
+    ws.send(JSON.stringify({ type: 'reset' }));
+  }
+
+  // ── UI helpers ──
+  function resetUI() {
+    isLocked = false;
+    setStatus('Ready — buzz in!', '');
+    setBuzzState('ready');
+    document.getElementById('reset-btn').style.display = 'none';
+  }
+
+  function setStatus(text, cls) {
+    const el = document.getElementById('status');
+    el.textContent = text;
+    el.className = cls || '';
+  }
+
+  function setBuzzState(state) {
+    const btn = document.getElementById('buzz-btn');
+    btn.className = state;
+  }
+
+  function updatePlayerCount(n) {
+    const el = document.getElementById('player-count');
+    el.textContent = n + (n === 1 ? ' player' : ' players') + ' connected';
+
+    // Only allow buzzing if at least 1 player (yourself)
+    if (n >= 1 && !isLocked) {
+      setBuzzState('ready');
+      setStatus('Ready — buzz in!', '');
+    }
+  }
+
+  function setConnStatus(text, pulse) {
+    const el = document.getElementById('conn-status');
+    el.textContent = text;
+    el.className = pulse ? 'pulsing' : '';
+  }
+
+  // ── Spacebar support ──
+  document.addEventListener('keydown', (e) => {
+    if (e.code === 'Space' && document.getElementById('game').style.display !== 'none') {
+      e.preventDefault();
+      buzz();
+    }
+  });
+
+  // ── Auto-focus room input ──
+  document.getElementById('room-input').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') joinRoom();
+  });
+</script>
+</body>
+</html>
