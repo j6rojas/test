@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>CHEM 118 — Study</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
     --bg: #0c0c0e;
     --surface: #141416;
@@ -27,622 +27,711 @@
     --mono: 'DM Mono', monospace;
     --sans: 'DM Sans', system-ui, sans-serif;
     --radius: 10px;
-    --radius-lg: 16px;
   }
+  html, body { height: 100%; background: var(--bg); color: var(--text); font-family: var(--sans); font-size: 14px; -webkit-font-smoothing: antialiased; }
 
-  html, body {
-    height: 100%;
-    background: var(--bg);
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 14px;
-    -webkit-font-smoothing: antialiased;
-  }
+  .app { display: grid; grid-template-columns: 268px 1fr; grid-template-rows: 50px 1fr; height: 100dvh; overflow: hidden; }
 
-  /* ── layout ── */
-  .app {
-    display: grid;
-    grid-template-columns: 260px 1fr;
-    grid-template-rows: 52px 1fr;
-    height: 100dvh;
-    overflow: hidden;
-  }
-
-  /* ── topbar ── */
-  .topbar {
-    grid-column: 1 / -1;
-    background: var(--surface);
-    border-bottom: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    padding: 0 20px;
-    gap: 16px;
-  }
-
-  .topbar-logo {
-    font-family: var(--mono);
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--accent);
-    letter-spacing: 0.02em;
-    white-space: nowrap;
-  }
-
-  .topbar-divider { width: 1px; height: 20px; background: var(--border2); }
-
-  .topbar-class {
-    font-size: 13px;
-    color: var(--muted);
-    font-weight: 400;
-  }
-
-  .topbar-search {
-    margin-left: auto;
-    position: relative;
-  }
-
-  .search-icon {
-    position: absolute;
-    left: 10px;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--faint);
-    font-size: 13px;
-    pointer-events: none;
-  }
-
-  #search-input {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 6px 12px 6px 30px;
-    color: var(--text);
-    font-family: var(--sans);
-    font-size: 13px;
-    width: 220px;
-    outline: none;
-    transition: border-color 0.15s;
-  }
+  /* topbar */
+  .topbar { grid-column: 1/-1; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 16px; gap: 12px; }
+  .topbar-logo { font-family: var(--mono); font-size: 12px; font-weight: 500; color: var(--accent); letter-spacing: 0.05em; }
+  .topbar-div { width: 1px; height: 18px; background: var(--border2); }
+  .topbar-class { font-size: 13px; color: var(--muted); }
+  .topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+  .search-wrap { position: relative; }
+  .search-wrap svg { position: absolute; left: 9px; top: 50%; transform: translateY(-50%); color: var(--faint); pointer-events: none; }
+  #search-input { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 6px 10px 6px 28px; color: var(--text); font-family: var(--sans); font-size: 13px; width: 200px; outline: none; transition: border-color 0.15s; }
   #search-input::placeholder { color: var(--faint); }
   #search-input:focus { border-color: var(--border2); }
 
-  /* ── sidebar ── */
-  .sidebar {
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-  }
+  /* sidebar */
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); display: flex; flex-direction: column; overflow: hidden; }
+  .sb-top { padding: 12px; border-bottom: 1px solid var(--border); display: flex; flex-direction: column; gap: 8px; }
+  .sb-row { display: flex; gap: 6px; }
+  .sb-btn { flex: 1; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 7px 8px; font-family: var(--sans); font-size: 12px; color: var(--muted); cursor: pointer; transition: border-color 0.15s, color 0.15s; display: flex; align-items: center; justify-content: center; gap: 5px; white-space: nowrap; }
+  .sb-btn:hover { border-color: var(--border2); color: var(--text); }
+  .sb-btn.accent { border-color: rgba(200,185,122,0.3); color: var(--accent); }
+  .sb-btn.accent:hover { background: var(--accent-dim); }
 
-  .sidebar-section {
-    padding: 16px;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .sidebar-label {
-    font-family: var(--mono);
-    font-size: 10px;
-    letter-spacing: 0.1em;
-    color: var(--faint);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-
-  /* ── upload zone ── */
-  .upload-zone {
-    border: 1.5px dashed var(--border2);
-    border-radius: var(--radius);
-    padding: 18px 12px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.15s, background 0.15s;
-    position: relative;
-  }
-  .upload-zone:hover, .upload-zone.drag-over {
-    border-color: var(--accent);
-    background: var(--accent-glow);
-  }
-
-  .upload-zone input[type="file"] {
-    position: absolute;
-    inset: 0;
-    opacity: 0;
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-  }
-
-  .upload-icon { font-size: 22px; margin-bottom: 6px; }
-
-  .upload-text {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.4;
-  }
-
+  /* upload zone */
+  .upload-zone { border: 1.5px dashed var(--border2); border-radius: var(--radius); padding: 14px 10px; text-align: center; cursor: pointer; transition: border-color 0.15s, background 0.15s; position: relative; }
+  .upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: var(--accent-glow); }
+  .upload-zone input { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+  .upload-text { font-size: 11px; color: var(--muted); }
   .upload-text span { color: var(--accent); }
+  .upload-prog { display: none; margin-top: 8px; height: 2px; background: var(--surface3); border-radius: 2px; overflow: hidden; }
+  .upload-prog-bar { height: 100%; background: var(--accent); width: 0%; transition: width 0.3s; }
 
-  .upload-progress {
-    display: none;
-    margin-top: 10px;
-    height: 3px;
-    background: var(--surface3);
-    border-radius: 2px;
-    overflow: hidden;
-  }
+  /* file tree */
+  .file-tree { flex: 1; overflow-y: auto; padding: 6px; }
+  .file-tree::-webkit-scrollbar { width: 3px; }
+  .file-tree::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 2px; }
 
-  .upload-progress-bar {
-    height: 100%;
-    background: var(--accent);
-    width: 0%;
-    transition: width 0.3s;
-    border-radius: 2px;
-  }
+  /* folder */
+  .folder-wrap { margin-bottom: 2px; }
+  .folder-header { display: flex; align-items: center; gap: 6px; padding: 6px 8px; border-radius: 7px; cursor: pointer; transition: background 0.12s; user-select: none; }
+  .folder-header:hover { background: var(--surface2); }
+  .folder-arrow { font-size: 9px; color: var(--faint); transition: transform 0.15s; flex-shrink: 0; }
+  .folder-arrow.open { transform: rotate(90deg); }
+  .folder-icon { font-size: 14px; flex-shrink: 0; }
+  .folder-name { font-size: 12px; font-weight: 500; color: var(--muted); flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .folder-count { font-family: var(--mono); font-size: 10px; color: var(--faint); }
+  .folder-children { padding-left: 8px; display: none; }
+  .folder-children.open { display: block; }
 
-  /* ── file list in sidebar ── */
-  .file-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 8px;
-  }
-
-  .file-list::-webkit-scrollbar { width: 4px; }
-  .file-list::-webkit-scrollbar-track { background: transparent; }
-  .file-list::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 2px; }
-
-  .file-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 10px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: background 0.12s;
-    position: relative;
-    group: true;
-  }
+  /* file item */
+  .file-item { display: flex; align-items: center; gap: 7px; padding: 7px 8px; border-radius: 7px; cursor: pointer; transition: background 0.12s; position: relative; }
   .file-item:hover { background: var(--surface2); }
   .file-item.active { background: var(--accent-dim); }
   .file-item.active .file-name { color: var(--accent); }
-  .file-item.hidden { display: none; }
-
-  .file-icon {
-    font-size: 16px;
-    flex-shrink: 0;
-    opacity: 0.7;
-  }
-
+  .file-item.dragging { opacity: 0.4; }
+  .file-item.drag-over-top { box-shadow: 0 -2px 0 var(--accent); }
+  .file-item.drag-over-bottom { box-shadow: 0 2px 0 var(--accent); }
+  .drag-handle { color: var(--faint); font-size: 11px; cursor: grab; flex-shrink: 0; opacity: 0; transition: opacity 0.15s; }
+  .file-item:hover .drag-handle { opacity: 1; }
+  .file-icon-sm { font-size: 14px; flex-shrink: 0; opacity: 0.6; }
   .file-meta { flex: 1; min-width: 0; }
+  .file-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .file-sub { font-family: var(--mono); font-size: 10px; color: var(--faint); margin-top: 1px; }
+  .file-progress-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--accent); flex-shrink: 0; opacity: 0; }
+  .file-progress-dot.has-progress { opacity: 1; }
+  .file-del { opacity: 0; background: none; border: none; color: var(--red); cursor: pointer; padding: 2px 4px; border-radius: 4px; font-size: 12px; flex-shrink: 0; }
+  .file-item:hover .file-del { opacity: 1; }
 
-  .file-name {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.3;
-  }
+  .empty-state { text-align: center; padding: 24px 12px; color: var(--faint); font-size: 12px; line-height: 1.7; }
 
-  .file-size {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--faint);
-    margin-top: 1px;
-  }
+  /* stats */
+  .sb-stats { padding: 8px 14px; border-top: 1px solid var(--border); display: flex; gap: 10px; }
+  .stat { font-family: var(--mono); font-size: 10px; color: var(--faint); display: flex; align-items: center; gap: 4px; }
+  .stat-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--green); }
 
-  .file-delete {
-    opacity: 0;
-    background: none;
-    border: none;
-    color: var(--red);
-    cursor: pointer;
-    padding: 2px 4px;
-    border-radius: 4px;
-    font-size: 13px;
-    transition: opacity 0.15s, background 0.15s;
-    flex-shrink: 0;
-  }
-  .file-item:hover .file-delete { opacity: 1; }
-  .file-delete:hover { background: rgba(224,92,92,0.15); }
+  /* main */
+  .main { display: flex; flex-direction: column; overflow: hidden; background: var(--bg); }
 
-  .empty-state {
-    text-align: center;
-    padding: 30px 16px;
-    color: var(--faint);
-    font-size: 12px;
-    line-height: 1.6;
-    display: none;
-  }
-  .empty-state.show { display: block; }
+  /* viewer toolbar */
+  .viewer-bar { display: none; align-items: center; gap: 8px; padding: 8px 16px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+  .viewer-bar.show { display: flex; }
+  .viewer-title { font-size: 13px; font-weight: 500; flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .vbtn { background: var(--surface2); border: 1px solid var(--border); border-radius: 7px; padding: 5px 11px; font-family: var(--sans); font-size: 12px; color: var(--muted); cursor: pointer; transition: border-color 0.15s, color 0.15s; display: inline-flex; align-items: center; gap: 4px; text-decoration: none; white-space: nowrap; }
+  .vbtn:hover { border-color: var(--border2); color: var(--text); }
+  .vbtn:disabled { opacity: 0.35; cursor: default; }
+  .page-nav { display: flex; align-items: center; gap: 4px; }
+  .page-counter { font-family: var(--mono); font-size: 12px; color: var(--muted); padding: 0 6px; min-width: 70px; text-align: center; }
 
-  /* ── main viewer ── */
-  .main {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    background: var(--bg);
-  }
+  /* canvas area */
+  .canvas-area { flex: 1; overflow: hidden; display: none; flex-direction: column; align-items: center; justify-content: center; background: #111113; position: relative; }
+  .canvas-area.show { display: flex; }
+  #pdf-canvas { max-width: 100%; max-height: 100%; object-fit: contain; display: block; box-shadow: 0 4px 40px rgba(0,0,0,0.5); }
+  .canvas-loading { position: absolute; font-family: var(--mono); font-size: 12px; color: var(--faint); }
 
-  .viewer-toolbar {
-    display: none;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 20px;
-    border-bottom: 1px solid var(--border);
-    background: var(--surface);
-    flex-shrink: 0;
-  }
-  .viewer-toolbar.show { display: flex; }
+  /* arrow overlays */
+  .nav-overlay { position: absolute; top: 0; bottom: 0; width: 60px; display: flex; align-items: center; justify-content: center; cursor: pointer; opacity: 0; transition: opacity 0.15s; }
+  .nav-overlay:hover { opacity: 1; background: linear-gradient(to right, rgba(0,0,0,0.3), transparent); }
+  .nav-overlay.right { right: 0; background: linear-gradient(to left, rgba(0,0,0,0.3), transparent); }
+  .nav-overlay span { font-size: 20px; color: rgba(255,255,255,0.6); }
 
-  .viewer-filename {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text);
-    flex: 1;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-
-  .viewer-btn {
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 7px;
-    padding: 5px 12px;
-    font-family: var(--sans);
-    font-size: 12px;
-    color: var(--muted);
-    cursor: pointer;
-    transition: border-color 0.15s, color 0.15s;
-    white-space: nowrap;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-  }
-  .viewer-btn:hover { border-color: var(--border2); color: var(--text); }
-
-  .pdf-frame {
-    flex: 1;
-    width: 100%;
-    border: none;
-    display: none;
-    background: #1a1a1a;
-  }
-  .pdf-frame.show { display: block; }
-
-  /* ── welcome screen ── */
-  .welcome {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 12px;
-    color: var(--faint);
-    text-align: center;
-    padding: 40px;
-  }
+  /* welcome */
+  .welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; text-align: center; padding: 40px; }
   .welcome.hidden { display: none; }
+  .welcome-icon { font-size: 44px; opacity: 0.25; margin-bottom: 6px; }
+  .welcome-title { font-size: 17px; font-weight: 500; color: var(--muted); }
+  .welcome-sub { font-size: 13px; color: var(--faint); line-height: 1.6; max-width: 260px; }
 
-  .welcome-icon { font-size: 48px; opacity: 0.3; margin-bottom: 8px; }
+  /* modal */
+  .modal-bg { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 100; align-items: center; justify-content: center; }
+  .modal-bg.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border2); border-radius: 14px; padding: 24px; width: 320px; display: flex; flex-direction: column; gap: 14px; animation: popIn 0.15s ease; }
+  @keyframes popIn { from { opacity:0; transform:scale(0.96); } to { opacity:1; transform:scale(1); } }
+  .modal-title { font-size: 14px; font-weight: 600; color: var(--text); }
+  .modal-input { background: var(--surface2); border: 1px solid var(--border2); border-radius: 8px; padding: 9px 12px; color: var(--text); font-family: var(--sans); font-size: 13px; outline: none; width: 100%; }
+  .modal-input:focus { border-color: var(--accent); }
+  .modal-row { display: flex; gap: 8px; justify-content: flex-end; }
+  .modal-btn { background: var(--surface3); border: 1px solid var(--border); border-radius: 8px; padding: 8px 16px; font-family: var(--sans); font-size: 13px; color: var(--muted); cursor: pointer; transition: 0.15s; }
+  .modal-btn:hover { color: var(--text); border-color: var(--border2); }
+  .modal-btn.primary { background: var(--accent); color: #000; border-color: transparent; font-weight: 500; }
+  .modal-btn.primary:hover { opacity: 0.88; }
 
-  .welcome-title {
-    font-size: 18px;
-    font-weight: 500;
-    color: var(--muted);
-  }
-
-  .welcome-sub {
-    font-size: 13px;
-    line-height: 1.6;
-    max-width: 280px;
-  }
-
-  /* ── stats bar ── */
-  .stats {
-    padding: 8px 16px;
-    border-top: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-
-  .stat {
-    font-family: var(--mono);
-    font-size: 10px;
-    color: var(--faint);
-    display: flex;
-    align-items: center;
-    gap: 4px;
-  }
-
-  .stat-dot {
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: var(--green);
-  }
-
-  /* ── toast ── */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    right: 24px;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius);
-    padding: 10px 16px;
-    font-size: 13px;
-    color: var(--text);
-    opacity: 0;
-    transform: translateY(8px);
-    transition: opacity 0.2s, transform 0.2s;
-    pointer-events: none;
-    z-index: 999;
-  }
+  /* toast */
+  .toast { position: fixed; bottom: 20px; right: 20px; background: var(--surface2); border: 1px solid var(--border2); border-radius: 10px; padding: 9px 14px; font-size: 13px; color: var(--text); opacity: 0; transform: translateY(6px); transition: opacity 0.2s, transform 0.2s; pointer-events: none; z-index: 999; }
   .toast.show { opacity: 1; transform: translateY(0); }
   .toast.success { border-color: rgba(92,224,138,0.3); color: var(--green); }
   .toast.error { border-color: rgba(224,92,92,0.3); color: var(--red); }
 
-  /* ── animations ── */
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(4px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .file-item { animation: fadeIn 0.2s ease both; }
+  @keyframes fadeIn { from { opacity:0; transform:translateY(3px); } to { opacity:1; transform:translateY(0); } }
+  .file-item { animation: fadeIn 0.18s ease both; }
 </style>
 </head>
 <body>
-
 <div class="app">
 
   <!-- topbar -->
   <header class="topbar">
     <span class="topbar-logo">study//</span>
-    <div class="topbar-divider"></div>
+    <div class="topbar-div"></div>
     <span class="topbar-class">CHEM 118</span>
-    <div class="topbar-search">
-      <span class="search-icon">⌕</span>
-      <input id="search-input" type="text" placeholder="search slides..." autocomplete="off" />
+    <div class="topbar-right">
+      <div class="search-wrap">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input id="search-input" type="text" placeholder="search slides..." autocomplete="off" />
+      </div>
     </div>
   </header>
 
   <!-- sidebar -->
   <aside class="sidebar">
-    <div class="sidebar-section">
-      <div class="sidebar-label">Upload</div>
+    <div class="sb-top">
       <div class="upload-zone" id="upload-zone">
         <input type="file" accept=".pdf" multiple id="file-input" />
-        <div class="upload-icon">📄</div>
-        <div class="upload-text"><span>Click or drag</span> PDF files here</div>
-        <div class="upload-progress" id="upload-progress">
-          <div class="upload-progress-bar" id="upload-bar"></div>
-        </div>
+        <div class="upload-text">📄 <span>Click or drag</span> PDFs here</div>
+        <div class="upload-prog" id="upload-prog"><div class="upload-prog-bar" id="upload-bar"></div></div>
+      </div>
+      <div class="sb-row">
+        <button class="sb-btn accent" onclick="openFolderModal()">＋ folder</button>
+        <button class="sb-btn" id="sort-btn" onclick="cycleSortMode()">↕ sort: custom</button>
       </div>
     </div>
 
-    <div class="sidebar-section" style="border-bottom:none;padding-bottom:4px;">
-      <div class="sidebar-label">Slides <span id="file-count" style="color:var(--faint)"></span></div>
+    <div class="file-tree" id="file-tree">
+      <div class="empty-state" id="empty-state">No slides yet.<br>Upload your first PDF above.</div>
     </div>
 
-    <div class="file-list" id="file-list">
-      <div class="empty-state" id="empty-state">
-        No slides yet.<br>Upload your first PDF above.
-      </div>
-    </div>
-
-    <div class="stats">
-      <div class="stat"><span class="stat-dot"></span> CHEM 118</div>
-      <div class="stat" id="total-size">0 MB stored</div>
+    <div class="sb-stats">
+      <div class="stat"><span class="stat-dot"></span>CHEM 118</div>
+      <div class="stat" id="total-size">0 MB</div>
     </div>
   </aside>
 
-  <!-- main viewer -->
+  <!-- main -->
   <main class="main">
-    <div class="viewer-toolbar" id="viewer-toolbar">
-      <span class="viewer-filename" id="viewer-filename">—</span>
-      <a class="viewer-btn" id="open-new-tab" href="#" target="_blank">↗ open in tab</a>
-      <button class="viewer-btn" onclick="closeViewer()">✕ close</button>
+    <div class="viewer-bar" id="viewer-bar">
+      <span class="viewer-title" id="viewer-title">—</span>
+      <div class="page-nav">
+        <button class="vbtn" id="btn-prev" onclick="changePage(-1)">←</button>
+        <span class="page-counter" id="page-counter">1 / 1</span>
+        <button class="vbtn" id="btn-next" onclick="changePage(1)">→</button>
+      </div>
+      <a class="vbtn" id="open-tab" href="#" target="_blank">↗</a>
+      <button class="vbtn" onclick="closeViewer()">✕</button>
     </div>
 
     <div class="welcome" id="welcome">
       <div class="welcome-icon">⚗️</div>
       <div class="welcome-title">CHEM 118 Study Dashboard</div>
-      <div class="welcome-sub">Upload your lecture slides on the left, then click any file to read it here.</div>
+      <div class="welcome-sub">Upload lecture slides, organize into folders, and use ← → to flip through pages.</div>
     </div>
 
-    <iframe class="pdf-frame" id="pdf-frame" title="PDF Viewer"></iframe>
+    <div class="canvas-area" id="canvas-area">
+      <div class="nav-overlay left" onclick="changePage(-1)"><span>‹</span></div>
+      <span class="canvas-loading" id="canvas-loading">Loading...</span>
+      <canvas id="pdf-canvas"></canvas>
+      <div class="nav-overlay right" onclick="changePage(1)"><span>›</span></div>
+    </div>
   </main>
+</div>
 
+<!-- folder modal -->
+<div class="modal-bg" id="folder-modal">
+  <div class="modal">
+    <div class="modal-title">New Folder</div>
+    <input class="modal-input" id="folder-name-input" type="text" placeholder="e.g. Lecture 1–5" maxlength="40" />
+    <div class="modal-row">
+      <button class="modal-btn" onclick="closeFolderModal()">Cancel</button>
+      <button class="modal-btn primary" onclick="createFolder()">Create</button>
+    </div>
+  </div>
 </div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-  let files = [];
-  let activeFile = null;
+// ── PDF.js setup ──
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-  // ── init ──
-  async function init() {
-    await loadFiles();
-  }
+// ── state ──
+let serverFiles = [];     // from /api/files
+let pdfDoc = null;
+let currentPage = 1;
+let activeFile = null;
+let renderTask = null;
+let sortMode = 'custom';  // 'custom' | 'name' | 'date'
 
-  // ── load files from server ──
-  async function loadFiles() {
-    try {
-      const res = await fetch("/api/files");
-      files = await res.json();
-      renderFileList();
-    } catch (e) {
-      showToast("Couldn't load files", "error");
-    }
-  }
+// Persisted state in localStorage
+// state = { order: [filename,...], folders: [{name, files:[filename,...]}], pageProgress: {filename: pageNum} }
+function loadState() {
+  try { return JSON.parse(localStorage.getItem('studydash_state') || '{}'); } catch { return {}; }
+}
+function saveState(s) { localStorage.setItem('studydash_state', JSON.stringify(s)); }
 
-  // ── render file list ──
-  function renderFileList() {
-    const list = document.getElementById("file-list");
-    const empty = document.getElementById("empty-state");
-    const countEl = document.getElementById("file-count");
-    const sizeEl = document.getElementById("total-size");
+// ── init ──
+async function init() {
+  await loadFiles();
+}
 
-    // Remove existing file items (keep empty state)
-    list.querySelectorAll(".file-item").forEach(el => el.remove());
+async function loadFiles() {
+  try {
+    const res = await fetch('/api/files');
+    serverFiles = await res.json();
+    renderTree();
+    updateStats();
+  } catch { showToast('Could not load files', 'error'); }
+}
 
-    const query = document.getElementById("search-input").value.toLowerCase();
-    const filtered = files.filter(f => f.name.toLowerCase().includes(query));
+// ── build tree ──
+function renderTree() {
+  const state = loadState();
+  const tree = document.getElementById('file-tree');
+  const query = document.getElementById('search-input').value.toLowerCase().trim();
 
-    countEl.textContent = files.length > 0 ? `(${files.length})` : "";
+  // Ensure order array exists
+  if (!state.order) state.order = [];
+  if (!state.folders) state.folders = [];
 
-    const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
-    sizeEl.textContent = (totalBytes / (1024 * 1024)).toFixed(1) + " MB stored";
+  // Add any new server files not yet in order
+  serverFiles.forEach(f => {
+    if (!state.order.includes(f.name)) state.order.push(f.name);
+  });
+  // Remove deleted files from order
+  state.order = state.order.filter(n => serverFiles.find(f => f.name === n));
+  saveState(state);
 
-    if (files.length === 0) {
-      empty.classList.add("show");
-    } else {
-      empty.classList.remove("show");
-    }
+  // Sort
+  let orderedFiles = [...serverFiles];
+  if (sortMode === 'name') orderedFiles.sort((a,b) => a.name.localeCompare(b.name));
+  else if (sortMode === 'date') orderedFiles.sort((a,b) => new Date(b.uploaded) - new Date(a.uploaded));
+  else orderedFiles.sort((a,b) => state.order.indexOf(a.name) - state.order.indexOf(b.name));
 
-    filtered.forEach((file, i) => {
-      const item = document.createElement("div");
-      item.className = "file-item" + (file.name === activeFile ? " active" : "");
-      item.style.animationDelay = (i * 0.04) + "s";
-      item.dataset.name = file.name;
+  // Filter by search
+  const filtered = query ? orderedFiles.filter(f => f.name.toLowerCase().includes(query)) : orderedFiles;
 
-      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+  // Clear tree (keep empty state)
+  tree.querySelectorAll('.folder-wrap, .file-item').forEach(el => el.remove());
 
-      item.innerHTML = `
-        <span class="file-icon">📑</span>
-        <div class="file-meta">
-          <div class="file-name" title="${file.name}">${file.name.replace(".pdf","")}</div>
-          <div class="file-size">${sizeMB} MB</div>
-        </div>
-        <button class="file-delete" onclick="deleteFile(event, '${file.name}')" title="Delete">✕</button>
-      `;
+  const empty = document.getElementById('empty-state');
 
-      item.addEventListener("click", (e) => {
-        if (e.target.classList.contains("file-delete")) return;
-        openFile(file.name);
-      });
+  if (serverFiles.length === 0) { empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
 
-      list.appendChild(item);
+  // Collect files assigned to folders
+  const folderedFiles = new Set();
+  state.folders.forEach(folder => {
+    folder.files = (folder.files || []).filter(n => serverFiles.find(f => f.name === n));
+    folder.files.forEach(n => folderedFiles.add(n));
+  });
+
+  // Render folders
+  state.folders.forEach((folder, fi) => {
+    const folderFiles = folder.files
+      .map(n => orderedFiles.find(f => f.name === n))
+      .filter(Boolean)
+      .filter(f => !query || f.name.toLowerCase().includes(query));
+
+    if (query && folderFiles.length === 0) return;
+
+    const wrap = document.createElement('div');
+    wrap.className = 'folder-wrap';
+    wrap.dataset.folderIdx = fi;
+
+    const isOpen = folder.open !== false;
+    wrap.innerHTML = `
+      <div class="folder-header" onclick="toggleFolder(${fi})">
+        <span class="folder-arrow ${isOpen ? 'open' : ''}">▶</span>
+        <span class="folder-icon">📁</span>
+        <span class="folder-name">${escHtml(folder.name)}</span>
+        <span class="folder-count">${folder.files.length}</span>
+        <button style="background:none;border:none;color:var(--faint);cursor:pointer;font-size:11px;padding:2px 4px;border-radius:4px;margin-left:4px;" 
+          onclick="event.stopPropagation();deleteFolder(${fi})" title="Delete folder">✕</button>
+      </div>
+      <div class="folder-children ${isOpen ? 'open' : ''}" id="folder-children-${fi}"></div>
+    `;
+
+    const children = wrap.querySelector(`#folder-children-${fi}`);
+    folderFiles.forEach((file, i) => {
+      children.appendChild(makeFileItem(file, i, fi));
     });
 
-    if (filtered.length === 0 && files.length > 0) {
-      const noResult = document.createElement("div");
-      noResult.className = "empty-state show";
-      noResult.style.display = "block";
-      noResult.textContent = "No slides match your search.";
-      list.appendChild(noResult);
-    }
-  }
+    // Drop target for folder
+    wrap.addEventListener('dragover', e => { e.preventDefault(); e.stopPropagation(); });
+    wrap.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); dropIntoFolder(e, fi); });
 
-  // ── open PDF ──
-  function openFile(name) {
-    activeFile = name;
-    const url = "/uploads/" + encodeURIComponent(name);
-
-    document.getElementById("pdf-frame").src = url;
-    document.getElementById("pdf-frame").classList.add("show");
-    document.getElementById("welcome").classList.add("hidden");
-    document.getElementById("viewer-toolbar").classList.add("show");
-    document.getElementById("viewer-filename").textContent = name.replace(".pdf", "");
-    document.getElementById("open-new-tab").href = url;
-
-    renderFileList();
-  }
-
-  // ── close viewer ──
-  function closeViewer() {
-    activeFile = null;
-    document.getElementById("pdf-frame").classList.remove("show");
-    document.getElementById("pdf-frame").src = "";
-    document.getElementById("welcome").classList.remove("hidden");
-    document.getElementById("viewer-toolbar").classList.remove("show");
-    renderFileList();
-  }
-
-  // ── delete file ──
-  async function deleteFile(e, name) {
-    e.stopPropagation();
-    if (!confirm(`Delete "${name.replace(".pdf","")}"?`)) return;
-    try {
-      await fetch("/api/delete/" + encodeURIComponent(name), { method: "DELETE" });
-      if (activeFile === name) closeViewer();
-      showToast("Deleted " + name.replace(".pdf",""), "success");
-      await loadFiles();
-    } catch {
-      showToast("Couldn't delete file", "error");
-    }
-  }
-
-  // ── upload ──
-  async function uploadFiles(fileList) {
-    const progress = document.getElementById("upload-progress");
-    const bar = document.getElementById("upload-bar");
-    progress.style.display = "block";
-    bar.style.width = "0%";
-
-    for (let i = 0; i < fileList.length; i++) {
-      const file = fileList[i];
-      if (!file.name.endsWith(".pdf")) {
-        showToast("Only PDF files please!", "error");
-        continue;
-      }
-
-      const formData = new FormData();
-      formData.append("file", file);
-
-      try {
-        bar.style.width = ((i / fileList.length) * 80 + 10) + "%";
-        const res = await fetch("/api/upload", { method: "POST", body: formData });
-        const data = await res.json();
-        if (data.success) {
-          showToast("Uploaded " + file.name.replace(".pdf",""), "success");
-        }
-      } catch {
-        showToast("Upload failed for " + file.name, "error");
-      }
-    }
-
-    bar.style.width = "100%";
-    setTimeout(() => { progress.style.display = "none"; bar.style.width = "0%"; }, 600);
-    await loadFiles();
-  }
-
-  // ── file input ──
-  document.getElementById("file-input").addEventListener("change", function() {
-    if (this.files.length) uploadFiles(this.files);
-    this.value = "";
+    tree.appendChild(wrap);
   });
 
-  // ── drag and drop ──
-  const zone = document.getElementById("upload-zone");
-  zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("drag-over"); });
-  zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
-  zone.addEventListener("drop", e => {
+  // Render unfoldered files
+  const unfolderedFiltered = filtered.filter(f => !folderedFiles.has(f.name));
+  unfolderedFiltered.forEach((file, i) => {
+    tree.appendChild(makeFileItem(file, i, null));
+  });
+
+  if (filtered.length === 0 && serverFiles.length > 0) {
+    const noRes = document.createElement('div');
+    noRes.className = 'empty-state';
+    noRes.style.cssText = 'display:block';
+    noRes.textContent = 'No slides match your search.';
+    tree.appendChild(noRes);
+  }
+}
+
+function makeFileItem(file, i, folderIdx) {
+  const state = loadState();
+  const progress = (state.pageProgress || {})[file.name];
+  const sizeMB = (file.size / (1024*1024)).toFixed(1);
+
+  const item = document.createElement('div');
+  item.className = 'file-item' + (file.name === activeFile ? ' active' : '');
+  item.style.animationDelay = (i * 0.03) + 's';
+  item.dataset.filename = file.name;
+  item.draggable = true;
+
+  item.innerHTML = `
+    <span class="drag-handle" title="Drag to reorder">⠿</span>
+    <span class="file-icon-sm">📑</span>
+    <div class="file-meta">
+      <div class="file-name" title="${escHtml(file.name)}">${escHtml(file.name.replace('.pdf',''))}</div>
+      <div class="file-sub">${sizeMB} MB${progress ? ' · p.' + progress : ''}</div>
+    </div>
+    <span class="file-progress-dot ${progress ? 'has-progress' : ''}" title="Page ${progress || 1}"></span>
+    <button class="file-del" onclick="deleteFile(event,'${escHtml(file.name)}')" title="Delete">✕</button>
+  `;
+
+  item.addEventListener('click', e => {
+    if (e.target.classList.contains('file-del') || e.target.classList.contains('drag-handle')) return;
+    openFile(file.name);
+  });
+
+  // Drag to reorder
+  item.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('text/plain', file.name);
+    item.classList.add('dragging');
+  });
+  item.addEventListener('dragend', () => item.classList.remove('dragging'));
+  item.addEventListener('dragover', e => {
     e.preventDefault();
-    zone.classList.remove("drag-over");
-    if (e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files);
+    const rect = item.getBoundingClientRect();
+    const mid = rect.top + rect.height / 2;
+    item.classList.toggle('drag-over-top', e.clientY < mid);
+    item.classList.toggle('drag-over-bottom', e.clientY >= mid);
+  });
+  item.addEventListener('dragleave', () => {
+    item.classList.remove('drag-over-top', 'drag-over-bottom');
+  });
+  item.addEventListener('drop', e => {
+    e.preventDefault();
+    e.stopPropagation();
+    item.classList.remove('drag-over-top', 'drag-over-bottom');
+    const draggedName = e.dataTransfer.getData('text/plain');
+    if (draggedName === file.name) return;
+    const rect = item.getBoundingClientRect();
+    const before = e.clientY < rect.top + rect.height / 2;
+    reorderFile(draggedName, file.name, before, folderIdx);
   });
 
-  // ── search ──
-  document.getElementById("search-input").addEventListener("input", renderFileList);
+  return item;
+}
 
-  // ── toast ──
-  let toastTimer;
-  function showToast(msg, type = "") {
-    const t = document.getElementById("toast");
-    t.textContent = msg;
-    t.className = "toast show" + (type ? " " + type : "");
-    clearTimeout(toastTimer);
-    toastTimer = setTimeout(() => t.className = "toast", 2500);
+function reorderFile(draggedName, targetName, before, folderIdx) {
+  const state = loadState();
+  if (folderIdx !== null) {
+    const folder = state.folders[folderIdx];
+    const arr = folder.files;
+    const from = arr.indexOf(draggedName);
+    const to = arr.indexOf(targetName);
+    if (from === -1 || to === -1) return;
+    arr.splice(from, 1);
+    const newTo = arr.indexOf(targetName);
+    arr.splice(before ? newTo : newTo + 1, 0, draggedName);
+  } else {
+    const arr = state.order;
+    const from = arr.indexOf(draggedName);
+    const to = arr.indexOf(targetName);
+    if (from === -1 || to === -1) return;
+    arr.splice(from, 1);
+    const newTo = arr.indexOf(targetName);
+    arr.splice(before ? newTo : newTo + 1, 0, draggedName);
+  }
+  sortMode = 'custom';
+  updateSortBtn();
+  saveState(state);
+  renderTree();
+}
+
+function dropIntoFolder(e, fi) {
+  const draggedName = e.dataTransfer.getData('text/plain');
+  if (!draggedName) return;
+  const state = loadState();
+  // Remove from any existing folder
+  state.folders.forEach(f => { f.files = f.files.filter(n => n !== draggedName); });
+  // Remove from global order (it's now in folder)
+  // Add to target folder
+  if (!state.folders[fi].files.includes(draggedName)) {
+    state.folders[fi].files.push(draggedName);
+  }
+  saveState(state);
+  renderTree();
+  showToast('Moved into ' + state.folders[fi].name, 'success');
+}
+
+// ── folder actions ──
+function toggleFolder(fi) {
+  const state = loadState();
+  state.folders[fi].open = !(state.folders[fi].open !== false);
+  saveState(state);
+  renderTree();
+}
+
+function deleteFolder(fi) {
+  const state = loadState();
+  const name = state.folders[fi].name;
+  // Files go back to root
+  state.folders[fi].files.forEach(f => {
+    if (!state.order.includes(f)) state.order.push(f);
+  });
+  state.folders.splice(fi, 1);
+  saveState(state);
+  renderTree();
+  showToast('Deleted folder "' + name + '"', 'success');
+}
+
+function openFolderModal() {
+  document.getElementById('folder-modal').classList.add('open');
+  setTimeout(() => document.getElementById('folder-name-input').focus(), 50);
+}
+
+function closeFolderModal() {
+  document.getElementById('folder-modal').classList.remove('open');
+  document.getElementById('folder-name-input').value = '';
+}
+
+function createFolder() {
+  const name = document.getElementById('folder-name-input').value.trim();
+  if (!name) return;
+  const state = loadState();
+  if (!state.folders) state.folders = [];
+  state.folders.push({ name, files: [], open: true });
+  saveState(state);
+  closeFolderModal();
+  renderTree();
+  showToast('Folder "' + name + '" created', 'success');
+}
+
+// ── sort ──
+function cycleSortMode() {
+  const modes = ['custom','name','date'];
+  sortMode = modes[(modes.indexOf(sortMode) + 1) % modes.length];
+  updateSortBtn();
+  renderTree();
+}
+
+function updateSortBtn() {
+  document.getElementById('sort-btn').textContent = '↕ sort: ' + sortMode;
+}
+
+// ── open PDF with PDF.js ──
+async function openFile(name) {
+  activeFile = name;
+  const state = loadState();
+  const savedPage = (state.pageProgress || {})[name] || 1;
+
+  document.getElementById('welcome').classList.add('hidden');
+  document.getElementById('canvas-area').classList.add('show');
+  document.getElementById('viewer-bar').classList.add('show');
+  document.getElementById('viewer-title').textContent = name.replace('.pdf','');
+  document.getElementById('open-tab').href = '/uploads/' + encodeURIComponent(name);
+  document.getElementById('canvas-loading').style.display = 'block';
+  document.getElementById('pdf-canvas').style.display = 'none';
+
+  renderTree();
+
+  try {
+    const url = '/uploads/' + encodeURIComponent(name);
+    pdfDoc = await pdfjsLib.getDocument(url).promise;
+    currentPage = Math.min(savedPage, pdfDoc.numPages);
+    await renderPage(currentPage);
+  } catch (err) {
+    showToast('Could not load PDF', 'error');
+    console.error(err);
+  }
+}
+
+async function renderPage(pageNum) {
+  if (!pdfDoc) return;
+  if (renderTask) { renderTask.cancel(); renderTask = null; }
+
+  currentPage = Math.max(1, Math.min(pageNum, pdfDoc.numPages));
+
+  document.getElementById('page-counter').textContent = currentPage + ' / ' + pdfDoc.numPages;
+  document.getElementById('btn-prev').disabled = currentPage <= 1;
+  document.getElementById('btn-next').disabled = currentPage >= pdfDoc.numPages;
+
+  // Save progress
+  if (activeFile) {
+    const state = loadState();
+    if (!state.pageProgress) state.pageProgress = {};
+    state.pageProgress[activeFile] = currentPage;
+    saveState(state);
+    // Update sidebar dot without full re-render
+    const item = document.querySelector(`.file-item[data-filename="${CSS.escape(activeFile)}"]`);
+    if (item) {
+      const dot = item.querySelector('.file-progress-dot');
+      const sub = item.querySelector('.file-sub');
+      if (dot) dot.classList.add('has-progress');
+      if (sub) {
+        const file = serverFiles.find(f => f.name === activeFile);
+        const sizeMB = file ? (file.size/(1024*1024)).toFixed(1) : '';
+        sub.textContent = sizeMB + ' MB · p.' + currentPage;
+      }
+    }
   }
 
-  init();
+  const loading = document.getElementById('canvas-loading');
+  const canvas = document.getElementById('pdf-canvas');
+
+  loading.style.display = 'block';
+  canvas.style.display = 'none';
+
+  const page = await pdfDoc.getPage(currentPage);
+  const area = document.getElementById('canvas-area');
+  const areaW = area.clientWidth - 40;
+  const areaH = area.clientHeight - 40;
+
+  const viewport = page.getViewport({ scale: 1 });
+  const scale = Math.min(areaW / viewport.width, areaH / viewport.height, 2);
+  const scaled = page.getViewport({ scale });
+
+  canvas.width = scaled.width;
+  canvas.height = scaled.height;
+
+  const ctx = canvas.getContext('2d');
+  renderTask = page.render({ canvasContext: ctx, viewport: scaled });
+
+  try {
+    await renderTask.promise;
+    loading.style.display = 'none';
+    canvas.style.display = 'block';
+  } catch (e) {
+    if (e.name !== 'RenderingCancelledException') console.error(e);
+  }
+}
+
+function changePage(delta) {
+  if (!pdfDoc) return;
+  renderPage(currentPage + delta);
+}
+
+function closeViewer() {
+  activeFile = null;
+  pdfDoc = null;
+  currentPage = 1;
+  document.getElementById('canvas-area').classList.remove('show');
+  document.getElementById('welcome').classList.remove('hidden');
+  document.getElementById('viewer-bar').classList.remove('show');
+  document.getElementById('pdf-canvas').getContext('2d').clearRect(0,0,9999,9999);
+  renderTree();
+}
+
+// ── keyboard navigation ──
+document.addEventListener('keydown', e => {
+  if (!pdfDoc) return;
+  if (e.target.tagName === 'INPUT') return;
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); changePage(1); }
+  if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); changePage(-1); }
+});
+
+// ── delete file ──
+async function deleteFile(e, name) {
+  e.stopPropagation();
+  if (!confirm('Delete "' + name.replace('.pdf','') + '"?')) return;
+  try {
+    await fetch('/api/delete/' + encodeURIComponent(name), { method: 'DELETE' });
+    if (activeFile === name) closeViewer();
+    // Remove from state
+    const state = loadState();
+    state.order = (state.order || []).filter(n => n !== name);
+    state.folders && state.folders.forEach(f => { f.files = f.files.filter(n => n !== name); });
+    if (state.pageProgress) delete state.pageProgress[name];
+    saveState(state);
+    showToast('Deleted', 'success');
+    await loadFiles();
+  } catch { showToast('Delete failed', 'error'); }
+}
+
+// ── upload ──
+async function uploadFiles(fileList) {
+  const prog = document.getElementById('upload-prog');
+  const bar = document.getElementById('upload-bar');
+  prog.style.display = 'block';
+  bar.style.width = '5%';
+
+  for (let i = 0; i < fileList.length; i++) {
+    const file = fileList[i];
+    if (!file.name.toLowerCase().endsWith('.pdf')) { showToast('Only PDFs supported', 'error'); continue; }
+    const fd = new FormData();
+    fd.append('file', file);
+    try {
+      bar.style.width = ((i / fileList.length) * 80 + 10) + '%';
+      const res = await fetch('/api/upload', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (data.success) showToast('Uploaded ' + file.name.replace('.pdf',''), 'success');
+    } catch { showToast('Upload failed: ' + file.name, 'error'); }
+  }
+
+  bar.style.width = '100%';
+  setTimeout(() => { prog.style.display = 'none'; bar.style.width = '0%'; }, 500);
+  await loadFiles();
+}
+
+document.getElementById('file-input').addEventListener('change', function() {
+  if (this.files.length) uploadFiles(this.files);
+  this.value = '';
+});
+
+const zone = document.getElementById('upload-zone');
+zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+zone.addEventListener('drop', e => {
+  e.preventDefault();
+  zone.classList.remove('drag-over');
+  if (e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files);
+});
+
+// ── search ──
+document.getElementById('search-input').addEventListener('input', renderTree);
+
+// ── folder modal keyboard ──
+document.getElementById('folder-name-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') createFolder();
+  if (e.key === 'Escape') closeFolderModal();
+});
+document.getElementById('folder-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('folder-modal')) closeFolderModal();
+});
+
+// ── stats ──
+function updateStats() {
+  const total = serverFiles.reduce((s,f) => s + f.size, 0);
+  document.getElementById('total-size').textContent = (total/(1024*1024)).toFixed(1) + ' MB';
+  document.getElementById('file-tree').querySelectorAll('.file-item').length;
+}
+
+// ── toast ──
+let toastTimer;
+function showToast(msg, type='') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type ? ' '+type : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.className = 'toast', 2400);
+}
+
+function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+// ── resize re-render ──
+let resizeTimer;
+window.addEventListener('resize', () => {
+  clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => { if (pdfDoc) renderPage(currentPage); }, 200);
+});
+
+init();
 </script>
 </body>
 </html>
