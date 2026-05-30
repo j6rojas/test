@@ -659,29 +659,45 @@ async function uploadFiles(fileList) {
   const prog = document.getElementById('upload-prog');
   const bar = document.getElementById('upload-bar');
   prog.style.display = 'block';
-  bar.style.width = '5%';
+  bar.style.width = '10%';
 
-  for (let i = 0; i < fileList.length; i++) {
-    const file = fileList[i];
+  const fd = new FormData();
+  let validCount = 0;
+  let zipCount = 0;
+
+  for (const file of fileList) {
     const fname = file.name.toLowerCase();
-    if (!fname.endsWith('.pdf') && !fname.endsWith('.zip')) { showToast('Only PDFs and ZIPs supported', 'error'); continue; }
-    const fd = new FormData();
+    if (!fname.endsWith('.pdf') && !fname.endsWith('.zip')) {
+      showToast(`Skipped "${file.name}" — only PDFs and ZIPs supported`, 'error');
+      continue;
+    }
     fd.append('file', file);
-    try {
-      bar.style.width = ((i / fileList.length) * 80 + 10) + '%';
-      const res = await fetch('/api/upload', { method: 'POST', body: fd });
-      const data = await res.json();
-      if (data.success) {
-        if (fname.endsWith('.zip')) {
-          showToast(`Extracted ${data.count} PDF${data.count !== 1 ? 's' : ''} from ${file.name}`, 'success');
-        } else {
-          showToast('Uploaded ' + file.name.replace('.pdf',''), 'success');
-        }
-      }
-    } catch { showToast('Upload failed: ' + file.name, 'error'); }
+    validCount++;
+    if (fname.endsWith('.zip')) zipCount++;
   }
 
-  bar.style.width = '100%';
+  if (validCount === 0) {
+    prog.style.display = 'none';
+    return;
+  }
+
+  try {
+    bar.style.width = '50%';
+    const res = await fetch('/api/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    bar.style.width = '100%';
+    if (data.success) {
+      if (zipCount > 0) {
+        showToast(`Done! Added ${data.count} PDF${data.count !== 1 ? 's' : ''} total`, 'success');
+      } else {
+        showToast(`Uploaded ${data.count} file${data.count !== 1 ? 's' : ''}`, 'success');
+      }
+    }
+  } catch (e) {
+    showToast('Upload failed — check file sizes', 'error');
+    console.error(e);
+  }
+
   setTimeout(() => { prog.style.display = 'none'; bar.style.width = '0%'; }, 500);
   await loadFiles();
 }
