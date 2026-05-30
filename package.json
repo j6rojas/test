@@ -1,12 +1,10 @@
 {
-  "name": "buzzer-server",
+  "name": "study-dashboard",
   "version": "1.0.0",
-  "description": "Simple real-time buzzer system",
+  "description": "Personal study dashboard for lecture slides",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
-  "dependencies": {
-    "ws": "^8.17.0"
-  }
+  "dependencies": {}
 }

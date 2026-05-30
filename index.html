@@ -3,432 +3,646 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Buzzer</title>
+<title>CHEM 118 — Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
   :root {
-    --bg: #0f0f10;
-    --surface: #1a1a1d;
-    --border: rgba(255,255,255,0.08);
-    --text: #f0f0f0;
-    --muted: #888;
-    --buzz-idle: #2a2a2e;
-    --buzz-idle-border: rgba(255,255,255,0.12);
-    --buzz-win: #16a34a;
-    --buzz-lose: #7f1d1d;
-    --buzz-ready: #1d4ed8;
+    --bg: #0c0c0e;
+    --surface: #141416;
+    --surface2: #1c1c20;
+    --surface3: #242428;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #f0efe8;
+    --muted: #888880;
+    --faint: #444440;
+    --accent: #c8b97a;
+    --accent-dim: rgba(200,185,122,0.12);
+    --accent-glow: rgba(200,185,122,0.06);
+    --red: #e05c5c;
+    --green: #5ce08a;
+    --mono: 'DM Mono', monospace;
+    --sans: 'DM Sans', system-ui, sans-serif;
+    --radius: 10px;
+    --radius-lg: 16px;
   }
 
-  body {
+  html, body {
+    height: 100%;
     background: var(--bg);
     color: var(--text);
-    font-family: system-ui, sans-serif;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 28px;
-    padding: 24px;
-    user-select: none;
-  }
-
-  /* ── room setup screen ── */
-  #setup {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 20px;
-    width: 100%;
-    max-width: 340px;
-  }
-
-  #setup h1 {
-    font-size: 28px;
-    font-weight: 700;
-    letter-spacing: -0.5px;
-  }
-
-  #setup p {
+    font-family: var(--sans);
     font-size: 14px;
-    color: var(--muted);
-    text-align: center;
-    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
   }
 
-  .input-row {
-    display: flex;
-    gap: 8px;
-    width: 100%;
+  /* ── layout ── */
+  .app {
+    display: grid;
+    grid-template-columns: 260px 1fr;
+    grid-template-rows: 52px 1fr;
+    height: 100dvh;
+    overflow: hidden;
   }
 
-  #room-input {
-    flex: 1;
+  /* ── topbar ── */
+  .topbar {
+    grid-column: 1 / -1;
     background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 11px 14px;
-    color: var(--text);
-    font-size: 15px;
-    font-family: inherit;
-    outline: none;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 16px;
   }
-  #room-input::placeholder { letter-spacing: 0; text-transform: none; color: var(--muted); }
-  #room-input:focus { border-color: rgba(255,255,255,0.25); }
 
-  .btn {
-    background: #fff;
-    color: #000;
-    border: none;
-    border-radius: 10px;
-    padding: 11px 20px;
-    font-size: 14px;
-    font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: opacity 0.15s;
+  .topbar-logo {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--accent);
+    letter-spacing: 0.02em;
     white-space: nowrap;
   }
-  .btn:hover { opacity: 0.85; }
-  .btn.secondary {
-    background: var(--surface);
-    color: var(--text);
+
+  .topbar-divider { width: 1px; height: 20px; background: var(--border2); }
+
+  .topbar-class {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 400;
+  }
+
+  .topbar-search {
+    margin-left: auto;
+    position: relative;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--faint);
+    font-size: 13px;
+    pointer-events: none;
+  }
+
+  #search-input {
+    background: var(--surface2);
     border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 12px 6px 30px;
+    color: var(--text);
+    font-family: var(--sans);
+    font-size: 13px;
+    width: 220px;
+    outline: none;
+    transition: border-color 0.15s;
   }
+  #search-input::placeholder { color: var(--faint); }
+  #search-input:focus { border-color: var(--border2); }
 
-  .divider {
+  /* ── sidebar ── */
+  .sidebar {
+    background: var(--surface);
+    border-right: 1px solid var(--border);
     display: flex;
-    align-items: center;
-    gap: 10px;
-    width: 100%;
-    color: var(--muted);
-    font-size: 12px;
-  }
-  .divider::before, .divider::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
+    flex-direction: column;
+    overflow: hidden;
   }
 
-  /* ── game screen ── */
-  #game { display: none; flex-direction: column; align-items: center; gap: 24px; width: 100%; }
+  .sidebar-section {
+    padding: 16px;
+    border-bottom: 1px solid var(--border);
+  }
 
-  .room-badge {
-    font-size: 12px;
-    color: var(--muted);
-    letter-spacing: 2px;
+  .sidebar-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--faint);
     text-transform: uppercase;
+    margin-bottom: 10px;
   }
 
-  .players-row {
+  /* ── upload zone ── */
+  .upload-zone {
+    border: 1.5px dashed var(--border2);
+    border-radius: var(--radius);
+    padding: 18px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+  }
+  .upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--accent);
+    background: var(--accent-glow);
+  }
+
+  .upload-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  .upload-icon { font-size: 22px; margin-bottom: 6px; }
+
+  .upload-text {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+
+  .upload-text span { color: var(--accent); }
+
+  .upload-progress {
+    display: none;
+    margin-top: 10px;
+    height: 3px;
+    background: var(--surface3);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .upload-progress-bar {
+    height: 100%;
+    background: var(--accent);
+    width: 0%;
+    transition: width 0.3s;
+    border-radius: 2px;
+  }
+
+  /* ── file list in sidebar ── */
+  .file-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+
+  .file-list::-webkit-scrollbar { width: 4px; }
+  .file-list::-webkit-scrollbar-track { background: transparent; }
+  .file-list::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 2px; }
+
+  .file-item {
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
-    color: var(--muted);
-  }
-  .player-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    background: #16a34a;
-    display: inline-block;
-  }
-
-  /* ── status banner ── */
-  #status {
-    font-size: 18px;
-    font-weight: 600;
-    text-align: center;
-    min-height: 28px;
-    transition: color 0.2s;
-  }
-  #status.win  { color: #4ade80; }
-  #status.lose { color: #f87171; }
-
-  /* ── THE BUZZ BUTTON ── */
-  #buzz-btn {
-    width: min(320px, 80vw);
-    height: min(320px, 80vw);
-    border-radius: 50%;
-    border: 3px solid var(--buzz-idle-border);
-    background: var(--buzz-idle);
-    color: var(--text);
-    font-size: 32px;
-    font-weight: 800;
-    font-family: inherit;
-    cursor: pointer;
-    transition: background 0.15s, border-color 0.15s, transform 0.08s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 6px;
-    outline: none;
-    -webkit-tap-highlight-color: transparent;
-  }
-
-  #buzz-btn .sub {
-    font-size: 13px;
-    font-weight: 400;
-    color: var(--muted);
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-
-  #buzz-btn.ready {
-    border-color: rgba(59,130,246,0.5);
-    background: rgba(29,78,216,0.15);
-    cursor: pointer;
-  }
-  #buzz-btn.ready:hover { background: rgba(29,78,216,0.25); border-color: rgba(59,130,246,0.8); }
-  #buzz-btn.ready:active { transform: scale(0.96); }
-
-  #buzz-btn.win {
-    border-color: #16a34a;
-    background: rgba(22,163,74,0.2);
-    cursor: default;
-  }
-
-  #buzz-btn.lose {
-    border-color: rgba(127,29,29,0.6);
-    background: rgba(127,29,29,0.15);
-    cursor: default;
-  }
-
-  #buzz-btn.locked {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  /* ── reset button ── */
-  #reset-btn {
-    display: none;
-    background: transparent;
-    border: 1px solid var(--border);
+    padding: 8px 10px;
     border-radius: 8px;
-    color: var(--muted);
+    cursor: pointer;
+    transition: background 0.12s;
+    position: relative;
+    group: true;
+  }
+  .file-item:hover { background: var(--surface2); }
+  .file-item.active { background: var(--accent-dim); }
+  .file-item.active .file-name { color: var(--accent); }
+  .file-item.hidden { display: none; }
+
+  .file-icon {
+    font-size: 16px;
+    flex-shrink: 0;
+    opacity: 0.7;
+  }
+
+  .file-meta { flex: 1; min-width: 0; }
+
+  .file-name {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    line-height: 1.3;
+  }
+
+  .file-size {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--faint);
+    margin-top: 1px;
+  }
+
+  .file-delete {
+    opacity: 0;
+    background: none;
+    border: none;
+    color: var(--red);
+    cursor: pointer;
+    padding: 2px 4px;
+    border-radius: 4px;
     font-size: 13px;
-    font-family: inherit;
-    padding: 8px 20px;
+    transition: opacity 0.15s, background 0.15s;
+    flex-shrink: 0;
+  }
+  .file-item:hover .file-delete { opacity: 1; }
+  .file-delete:hover { background: rgba(224,92,92,0.15); }
+
+  .empty-state {
+    text-align: center;
+    padding: 30px 16px;
+    color: var(--faint);
+    font-size: 12px;
+    line-height: 1.6;
+    display: none;
+  }
+  .empty-state.show { display: block; }
+
+  /* ── main viewer ── */
+  .main {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    background: var(--bg);
+  }
+
+  .viewer-toolbar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface);
+    flex-shrink: 0;
+  }
+  .viewer-toolbar.show { display: flex; }
+
+  .viewer-filename {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text);
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .viewer-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    padding: 5px 12px;
+    font-family: var(--sans);
+    font-size: 12px;
+    color: var(--muted);
     cursor: pointer;
     transition: border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
   }
-  #reset-btn:hover { border-color: rgba(255,255,255,0.25); color: var(--text); }
+  .viewer-btn:hover { border-color: var(--border2); color: var(--text); }
 
-  /* ── connection states ── */
-  #conn-status {
-    font-size: 12px;
-    color: var(--muted);
+  .pdf-frame {
+    flex: 1;
+    width: 100%;
+    border: none;
+    display: none;
+    background: #1a1a1a;
+  }
+  .pdf-frame.show { display: block; }
+
+  /* ── welcome screen ── */
+  .welcome {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    color: var(--faint);
     text-align: center;
+    padding: 40px;
   }
+  .welcome.hidden { display: none; }
 
-  @keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
-  }
-  .pulsing { animation: pulse 1.2s ease-in-out infinite; }
+  .welcome-icon { font-size: 48px; opacity: 0.3; margin-bottom: 8px; }
 
-  /* ── spacebar hint ── */
-  .hint {
-    font-size: 12px;
+  .welcome-title {
+    font-size: 18px;
+    font-weight: 500;
     color: var(--muted);
-    opacity: 0.6;
   }
+
+  .welcome-sub {
+    font-size: 13px;
+    line-height: 1.6;
+    max-width: 280px;
+  }
+
+  /* ── stats bar ── */
+  .stats {
+    padding: 8px 16px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+
+  .stat {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--faint);
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .stat-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--green);
+  }
+
+  /* ── toast ── */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    background: var(--surface2);
+    border: 1px solid var(--border2);
+    border-radius: var(--radius);
+    padding: 10px 16px;
+    font-size: 13px;
+    color: var(--text);
+    opacity: 0;
+    transform: translateY(8px);
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; transform: translateY(0); }
+  .toast.success { border-color: rgba(92,224,138,0.3); color: var(--green); }
+  .toast.error { border-color: rgba(224,92,92,0.3); color: var(--red); }
+
+  /* ── animations ── */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .file-item { animation: fadeIn 0.2s ease both; }
 </style>
 </head>
 <body>
 
-<!-- SETUP SCREEN -->
-<div id="setup">
-  <h1>⚡ Buzzer</h1>
-  <p>Create a room and share the code with your friend. First to buzz wins the right to answer.</p>
+<div class="app">
 
-  <button class="btn" onclick="createRoom()">Create new room</button>
+  <!-- topbar -->
+  <header class="topbar">
+    <span class="topbar-logo">study//</span>
+    <div class="topbar-divider"></div>
+    <span class="topbar-class">CHEM 118</span>
+    <div class="topbar-search">
+      <span class="search-icon">⌕</span>
+      <input id="search-input" type="text" placeholder="search slides..." autocomplete="off" />
+    </div>
+  </header>
 
-  <div class="divider">or join existing</div>
+  <!-- sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label">Upload</div>
+      <div class="upload-zone" id="upload-zone">
+        <input type="file" accept=".pdf" multiple id="file-input" />
+        <div class="upload-icon">📄</div>
+        <div class="upload-text"><span>Click or drag</span> PDF files here</div>
+        <div class="upload-progress" id="upload-progress">
+          <div class="upload-progress-bar" id="upload-bar"></div>
+        </div>
+      </div>
+    </div>
 
-  <div class="input-row">
-    <input id="room-input" type="text" placeholder="Enter room code" maxlength="6" />
-    <button class="btn secondary" onclick="joinRoom()">Join</button>
-  </div>
+    <div class="sidebar-section" style="border-bottom:none;padding-bottom:4px;">
+      <div class="sidebar-label">Slides <span id="file-count" style="color:var(--faint)"></span></div>
+    </div>
+
+    <div class="file-list" id="file-list">
+      <div class="empty-state" id="empty-state">
+        No slides yet.<br>Upload your first PDF above.
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat"><span class="stat-dot"></span> CHEM 118</div>
+      <div class="stat" id="total-size">0 MB stored</div>
+    </div>
+  </aside>
+
+  <!-- main viewer -->
+  <main class="main">
+    <div class="viewer-toolbar" id="viewer-toolbar">
+      <span class="viewer-filename" id="viewer-filename">—</span>
+      <a class="viewer-btn" id="open-new-tab" href="#" target="_blank">↗ open in tab</a>
+      <button class="viewer-btn" onclick="closeViewer()">✕ close</button>
+    </div>
+
+    <div class="welcome" id="welcome">
+      <div class="welcome-icon">⚗️</div>
+      <div class="welcome-title">CHEM 118 Study Dashboard</div>
+      <div class="welcome-sub">Upload your lecture slides on the left, then click any file to read it here.</div>
+    </div>
+
+    <iframe class="pdf-frame" id="pdf-frame" title="PDF Viewer"></iframe>
+  </main>
+
 </div>
 
-<!-- GAME SCREEN -->
-<div id="game">
-  <div class="room-badge" id="room-label">ROOM: ----</div>
-
-  <div class="players-row">
-    <span class="player-dot"></span>
-    <span id="player-count">1 player connected</span>
-  </div>
-
-  <div id="status">Waiting for players...</div>
-
-  <button id="buzz-btn" class="locked" onclick="buzz()">
-    BUZZ
-    <span class="sub">tap to answer</span>
-  </button>
-
-  <button id="reset-btn" onclick="reset()">↺ Reset round</button>
-
-  <div class="hint">or press <kbd style="background:var(--surface);border:1px solid var(--border);border-radius:4px;padding:2px 6px;font-size:11px">Space</kbd></div>
-
-  <div id="conn-status" class="pulsing">Connecting...</div>
-</div>
+<div class="toast" id="toast"></div>
 
 <script>
-  let ws = null;
-  let myName = null;
-  let isLocked = false;
-  let currentRoom = null;
+  let files = [];
+  let activeFile = null;
 
-  // ── Room code helpers ──
-  function randomCode() {
-    return Math.random().toString(36).substring(2, 7).toUpperCase();
+  // ── init ──
+  async function init() {
+    await loadFiles();
   }
 
-  function createRoom() {
-    const code = randomCode();
-    enterRoom(code);
-  }
-
-  function joinRoom() {
-    const code = document.getElementById('room-input').value.trim().toUpperCase();
-    if (!code) { alert('Enter a room code first.'); return; }
-    enterRoom(code);
-  }
-
-  // ── Enter a room ──
-  function enterRoom(code) {
-    currentRoom = code;
-
-    // Show game screen
-    document.getElementById('setup').style.display = 'none';
-    const game = document.getElementById('game');
-    game.style.display = 'flex';
-
-    document.getElementById('room-label').textContent = 'ROOM: ' + code;
-
-    // Build WebSocket URL — works on Glitch and locally
-    const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-    const host = location.host;
-    const url = proto + '://' + host + '/' + code;
-
-    connect(url);
-  }
-
-  // ── WebSocket connection ──
-  function connect(url) {
-    ws = new WebSocket(url);
-
-    ws.onopen = () => {
-      setConnStatus('Connected ✓', false);
-    };
-
-    ws.onmessage = (e) => {
-      const msg = JSON.parse(e.data);
-
-      if (msg.type === 'welcome') {
-        myName = msg.name;
-      }
-
-      if (msg.type === 'state') {
-        updatePlayerCount(msg.playerCount);
-        if (!msg.locked) {
-          resetUI();
-        }
-      }
-
-      if (msg.type === 'buzzed') {
-        isLocked = true;
-        if (msg.isYou) {
-          setStatus('🎉 You buzzed first! Answer now.', 'win');
-          setBuzzState('win');
-        } else {
-          setStatus(msg.by + ' buzzed first!', 'lose');
-          setBuzzState('lose');
-        }
-        document.getElementById('reset-btn').style.display = 'inline-block';
-      }
-
-      if (msg.type === 'reset') {
-        resetUI();
-      }
-    };
-
-    ws.onclose = () => {
-      setConnStatus('Disconnected. Reconnecting...', true);
-      setTimeout(() => connect(
-        (location.protocol === 'https:' ? 'wss' : 'ws') + '://' + location.host + '/' + currentRoom
-      ), 2000);
-    };
-
-    ws.onerror = () => ws.close();
-  }
-
-  // ── Actions ──
-  function buzz() {
-    if (isLocked || !ws || ws.readyState !== 1) return;
-    ws.send(JSON.stringify({ type: 'buzz' }));
-  }
-
-  function reset() {
-    if (!ws || ws.readyState !== 1) return;
-    ws.send(JSON.stringify({ type: 'reset' }));
-  }
-
-  // ── UI helpers ──
-  function resetUI() {
-    isLocked = false;
-    setStatus('Ready — buzz in!', '');
-    setBuzzState('ready');
-    document.getElementById('reset-btn').style.display = 'none';
-  }
-
-  function setStatus(text, cls) {
-    const el = document.getElementById('status');
-    el.textContent = text;
-    el.className = cls || '';
-  }
-
-  function setBuzzState(state) {
-    const btn = document.getElementById('buzz-btn');
-    btn.className = state;
-  }
-
-  function updatePlayerCount(n) {
-    const el = document.getElementById('player-count');
-    el.textContent = n + (n === 1 ? ' player' : ' players') + ' connected';
-
-    // Only allow buzzing if at least 1 player (yourself)
-    if (n >= 1 && !isLocked) {
-      setBuzzState('ready');
-      setStatus('Ready — buzz in!', '');
+  // ── load files from server ──
+  async function loadFiles() {
+    try {
+      const res = await fetch("/api/files");
+      files = await res.json();
+      renderFileList();
+    } catch (e) {
+      showToast("Couldn't load files", "error");
     }
   }
 
-  function setConnStatus(text, pulse) {
-    const el = document.getElementById('conn-status');
-    el.textContent = text;
-    el.className = pulse ? 'pulsing' : '';
+  // ── render file list ──
+  function renderFileList() {
+    const list = document.getElementById("file-list");
+    const empty = document.getElementById("empty-state");
+    const countEl = document.getElementById("file-count");
+    const sizeEl = document.getElementById("total-size");
+
+    // Remove existing file items (keep empty state)
+    list.querySelectorAll(".file-item").forEach(el => el.remove());
+
+    const query = document.getElementById("search-input").value.toLowerCase();
+    const filtered = files.filter(f => f.name.toLowerCase().includes(query));
+
+    countEl.textContent = files.length > 0 ? `(${files.length})` : "";
+
+    const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
+    sizeEl.textContent = (totalBytes / (1024 * 1024)).toFixed(1) + " MB stored";
+
+    if (files.length === 0) {
+      empty.classList.add("show");
+    } else {
+      empty.classList.remove("show");
+    }
+
+    filtered.forEach((file, i) => {
+      const item = document.createElement("div");
+      item.className = "file-item" + (file.name === activeFile ? " active" : "");
+      item.style.animationDelay = (i * 0.04) + "s";
+      item.dataset.name = file.name;
+
+      const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+
+      item.innerHTML = `
+        <span class="file-icon">📑</span>
+        <div class="file-meta">
+          <div class="file-name" title="${file.name}">${file.name.replace(".pdf","")}</div>
+          <div class="file-size">${sizeMB} MB</div>
+        </div>
+        <button class="file-delete" onclick="deleteFile(event, '${file.name}')" title="Delete">✕</button>
+      `;
+
+      item.addEventListener("click", (e) => {
+        if (e.target.classList.contains("file-delete")) return;
+        openFile(file.name);
+      });
+
+      list.appendChild(item);
+    });
+
+    if (filtered.length === 0 && files.length > 0) {
+      const noResult = document.createElement("div");
+      noResult.className = "empty-state show";
+      noResult.style.display = "block";
+      noResult.textContent = "No slides match your search.";
+      list.appendChild(noResult);
+    }
   }
 
-  // ── Spacebar support ──
-  document.addEventListener('keydown', (e) => {
-    if (e.code === 'Space' && document.getElementById('game').style.display !== 'none') {
-      e.preventDefault();
-      buzz();
+  // ── open PDF ──
+  function openFile(name) {
+    activeFile = name;
+    const url = "/uploads/" + encodeURIComponent(name);
+
+    document.getElementById("pdf-frame").src = url;
+    document.getElementById("pdf-frame").classList.add("show");
+    document.getElementById("welcome").classList.add("hidden");
+    document.getElementById("viewer-toolbar").classList.add("show");
+    document.getElementById("viewer-filename").textContent = name.replace(".pdf", "");
+    document.getElementById("open-new-tab").href = url;
+
+    renderFileList();
+  }
+
+  // ── close viewer ──
+  function closeViewer() {
+    activeFile = null;
+    document.getElementById("pdf-frame").classList.remove("show");
+    document.getElementById("pdf-frame").src = "";
+    document.getElementById("welcome").classList.remove("hidden");
+    document.getElementById("viewer-toolbar").classList.remove("show");
+    renderFileList();
+  }
+
+  // ── delete file ──
+  async function deleteFile(e, name) {
+    e.stopPropagation();
+    if (!confirm(`Delete "${name.replace(".pdf","")}"?`)) return;
+    try {
+      await fetch("/api/delete/" + encodeURIComponent(name), { method: "DELETE" });
+      if (activeFile === name) closeViewer();
+      showToast("Deleted " + name.replace(".pdf",""), "success");
+      await loadFiles();
+    } catch {
+      showToast("Couldn't delete file", "error");
     }
+  }
+
+  // ── upload ──
+  async function uploadFiles(fileList) {
+    const progress = document.getElementById("upload-progress");
+    const bar = document.getElementById("upload-bar");
+    progress.style.display = "block";
+    bar.style.width = "0%";
+
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      if (!file.name.endsWith(".pdf")) {
+        showToast("Only PDF files please!", "error");
+        continue;
+      }
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        bar.style.width = ((i / fileList.length) * 80 + 10) + "%";
+        const res = await fetch("/api/upload", { method: "POST", body: formData });
+        const data = await res.json();
+        if (data.success) {
+          showToast("Uploaded " + file.name.replace(".pdf",""), "success");
+        }
+      } catch {
+        showToast("Upload failed for " + file.name, "error");
+      }
+    }
+
+    bar.style.width = "100%";
+    setTimeout(() => { progress.style.display = "none"; bar.style.width = "0%"; }, 600);
+    await loadFiles();
+  }
+
+  // ── file input ──
+  document.getElementById("file-input").addEventListener("change", function() {
+    if (this.files.length) uploadFiles(this.files);
+    this.value = "";
   });
 
-  // ── Auto-focus room input ──
-  document.getElementById('room-input').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') joinRoom();
+  // ── drag and drop ──
+  const zone = document.getElementById("upload-zone");
+  zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("drag-over"); });
+  zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
+  zone.addEventListener("drop", e => {
+    e.preventDefault();
+    zone.classList.remove("drag-over");
+    if (e.dataTransfer.files.length) uploadFiles(e.dataTransfer.files);
   });
+
+  // ── search ──
+  document.getElementById("search-input").addEventListener("input", renderFileList);
+
+  // ── toast ──
+  let toastTimer;
+  function showToast(msg, type = "") {
+    const t = document.getElementById("toast");
+    t.textContent = msg;
+    t.className = "toast show" + (type ? " " + type : "");
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.className = "toast", 2500);
+  }
+
+  init();
 </script>
 </body>
 </html>
