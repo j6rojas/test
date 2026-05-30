@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>CHEM 118 — Study</title>
+<title>Study Dash</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:opsz,wght@9..40,300;9..40,400;9..40,500;9..40,600&display=swap" rel="stylesheet" />
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
@@ -168,7 +168,7 @@
   <header class="topbar">
     <span class="topbar-logo">study//</span>
     <div class="topbar-div"></div>
-    <span class="topbar-class">CHEM 118</span>
+    <span class="topbar-class">Study Dash</span>
     <div class="topbar-right">
       <div class="search-wrap">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -181,8 +181,8 @@
   <aside class="sidebar">
     <div class="sb-top">
       <div class="upload-zone" id="upload-zone">
-        <input type="file" accept=".pdf" multiple id="file-input" />
-        <div class="upload-text">📄 <span>Click or drag</span> PDFs here</div>
+        <input type="file" accept=".pdf,.zip" multiple id="file-input" />
+        <div class="upload-text">📄 <span>Click or drag</span> PDFs or ZIPs here</div>
         <div class="upload-prog" id="upload-prog"><div class="upload-prog-bar" id="upload-bar"></div></div>
       </div>
       <div class="sb-row">
@@ -196,7 +196,7 @@
     </div>
 
     <div class="sb-stats">
-      <div class="stat"><span class="stat-dot"></span>CHEM 118</div>
+      <div class="stat"><span class="stat-dot"></span>Study Dash</div>
       <div class="stat" id="total-size">0 MB</div>
     </div>
   </aside>
@@ -216,8 +216,8 @@
 
     <div class="welcome" id="welcome">
       <div class="welcome-icon">⚗️</div>
-      <div class="welcome-title">CHEM 118 Study Dashboard</div>
-      <div class="welcome-sub">Upload lecture slides, organize into folders, and use ← → to flip through pages.</div>
+      <div class="welcome-title">Study Dash</div>
+      <div class="welcome-sub">Upload lecture slides or ZIPs, organize into folders, and use ← → to flip through pages.</div>
     </div>
 
     <div class="canvas-area" id="canvas-area">
@@ -663,14 +663,21 @@ async function uploadFiles(fileList) {
 
   for (let i = 0; i < fileList.length; i++) {
     const file = fileList[i];
-    if (!file.name.toLowerCase().endsWith('.pdf')) { showToast('Only PDFs supported', 'error'); continue; }
+    const fname = file.name.toLowerCase();
+    if (!fname.endsWith('.pdf') && !fname.endsWith('.zip')) { showToast('Only PDFs and ZIPs supported', 'error'); continue; }
     const fd = new FormData();
     fd.append('file', file);
     try {
       bar.style.width = ((i / fileList.length) * 80 + 10) + '%';
       const res = await fetch('/api/upload', { method: 'POST', body: fd });
       const data = await res.json();
-      if (data.success) showToast('Uploaded ' + file.name.replace('.pdf',''), 'success');
+      if (data.success) {
+        if (fname.endsWith('.zip')) {
+          showToast(`Extracted ${data.count} PDF${data.count !== 1 ? 's' : ''} from ${file.name}`, 'success');
+        } else {
+          showToast('Uploaded ' + file.name.replace('.pdf',''), 'success');
+        }
+      }
     } catch { showToast('Upload failed: ' + file.name, 'error'); }
   }
 
